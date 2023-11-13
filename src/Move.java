@@ -4,60 +4,60 @@ public class Move
     private int col;
     private int value;
 
-    Move()
+    public Move()
     {
         this.row = -1;
         this.col = -1;
         this.value = 0;
     }
 
-    Move(int row, int col)
+    public Move(int row, int col)
     {
         this.row = row;
         this.col = col;
         this.value = -1;
     }
 
-    Move(int value)
+    public Move(int value)
     {
         this.row = -1;
         this.col = -1;
         this.value = value;
     }
 
-    Move(int row, int col, int value)
+    public Move(int row, int col, int value)
     {
         this.row = row;
         this.col = col;
         this.value = value;
     }
 
-    int getRow()
+    public int getRow()
     {
         return this.row;
     }
 
-    int getCol()
+    public int getCol()
     {
         return this.col;
     }
 
-    int getValue()
+    public int getValue()
     {
         return this.value;
     }
 
-    void setRow(int row)
+    public void setRow(int row)
     {
         this.row = row;
     }
 
-    void setCol(int col)
+    public void setCol(int col)
     {
         this.col = col;
     }
 
-    void setValue(int value)
+    public void setValue(int value)
     {
         this.value = value;
     }
