@@ -1,3 +1,4 @@
+import javax.naming.NameClassPair;
 import java.util.ArrayList;
 
 public class Board
@@ -5,12 +6,20 @@ public class Board
 	public static final int WHITE = 1;
     public static final int BLACK = -1;
     public static final int EMPTY = 0;
+    /*  TODO: Remove if no workaround found
+    private static final String WHITE_DISK = "⚪";
+    private static final String BLACK_DISK = "⚫";
+    private static final String EMPTY_SQUARE = "◻f";
+     */
     private static final int ROWS = 8;
     private static final int COLUMNS = 8;
 
     private int[][] gameBoard;
 
     private int lastPlayer;
+    private int whiteScore;
+    private int blackScore;
+    private int winner;
 
     private Move lastMove;
 
@@ -19,6 +28,8 @@ public class Board
         this.lastMove = new Move();
         this.lastPlayer = WHITE;    // as black plays first
         initialiseBoard();
+        this.whiteScore = 2;
+        this.blackScore = 2;
     }
 	
 	// copy constructor
@@ -27,10 +38,10 @@ public class Board
         this.lastMove = board.lastMove;
         this.lastPlayer = board.lastPlayer;
         for (int row = 0; row < 8; ++row) {
-            for (int col = 0; col < 8; ++col) {
-                this.gameBoard[row][col] = board.gameBoard[row][col];
-            }
+            System.arraycopy(board.gameBoard[row], 0, this.gameBoard[row], 0, 8);
         }
+        this.whiteScore = board.whiteScore;
+        this.blackScore = board.blackScore;
     }
 
     /**
@@ -44,7 +55,7 @@ public class Board
             }
         }
 
-        // separate for, for the 2 middle rows
+        // separate for, for the 2 middle rows (3 and 4)
         for (int row = 3; row < 5; ++row) {
             int col;
 
@@ -80,11 +91,12 @@ public class Board
     }
 	
 	public void print() {
-        System.out.println(" ___________________ ");
-        System.out.println("| \\ A B C D E F G H |");
+        System.out.println("_______________________");
+        System.out.println("| \\ | A B C D E F G H |");
+        System.out.println("|___|_________________|");
         for (int row = 0; row < ROWS; row++) {
             System.out.print("| ");
-            System.out.print((row + 1) + " ");
+            System.out.print((row + 1) + " | ");
             for (int col = 0; col < COLUMNS; col++) {
                 switch (this.gameBoard[row][col]) {
                     case WHITE -> System.out.print("W ");
@@ -96,11 +108,11 @@ public class Board
             }
             System.out.println("|");
         }
-        System.out.println("|___________________|");
+        System.out.println("|___|_________________|");
     }
 
     /**
-     * @param letter the player making the move
+     * @param letter The player making the move
      * @return An arraylist of all the possible states we can get to from the board as is currently
      */
 	public ArrayList<Board> getChildren(int letter) {return null;}
@@ -114,7 +126,7 @@ public class Board
     /**
      * Making the assumption that the game does not end when a player is out of moves (as happens in some variations of
      * the game), therefore the only way a state can be terminal is if the entire board is full.
-     * @return True if the game is over, false if the state the board is in is not terminal
+     * @return True if the game has ended, false if it has not.
      */
 	public boolean isTerminal() {
         for (int row = 0; row < ROWS; ++row) {
@@ -130,9 +142,9 @@ public class Board
     }
 
     /**
-     * @param row the row entered
-     * @param col the column entered
-     * @return true if the move entered is valid, false otherwise
+     * @param row The row entered
+     * @param col The column entered
+     * @return True if the move entered is valid, false otherwise
      */
     private boolean isValidMove(int row, int col) {
         // if the square entered is out of bounds
@@ -145,6 +157,11 @@ public class Board
             return false;
         }
 
+        /* making a custom [8][2] 2D array called dimensions; each of the 8 rows consists of a "pair" (due to the lack
+         * of a native Java Pair class), the "key" of which represents the difference in rows to the board square provided
+         * as a parameter to this function, and the "value" of which similarly represents the difference in columns to the
+         * index we are currently checking.    */
+        int[][] directions = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
         return true;
 
     }
@@ -168,10 +185,7 @@ public class Board
     {
         for(int row = 0; row < ROWS; row++)
         {
-            for(int col = 0; col < COLUMNS; col++)
-            {
-                this.gameBoard[row][col] = gameBoard[row][col];
-            }
+            System.arraycopy(gameBoard[row], 0, this.gameBoard[row], 0, COLUMNS);
         }
     }
 
@@ -185,6 +199,13 @@ public class Board
     public void setLastPlayer(int lastPlayer)
     {
         this.lastPlayer = lastPlayer;
+    }
+
+    /**
+     * Calculates the scores for both players, and the winner (if there is one) as a result
+     */
+    public void calculateResults() {
+
     }
 	
 	
