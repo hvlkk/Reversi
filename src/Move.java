@@ -61,4 +61,14 @@ public class Move
     {
         this.value = value;
     }
+
+    /**
+     * Updates the contents of the Move instance this method is called upon to the contents of the Move instance passed as parameter.
+     * @param other The Move instance the contents of which we will be keeping.
+     */
+    public void update(Move other) {
+        this.setRow(other.getRow());
+        this.setCol(other.getCol());
+        this.setValue(other.getValue());
+    }
 }
