@@ -71,4 +71,15 @@ public class Move
         this.setCol(other.getCol());
         this.setValue(other.getValue());
     }
+
+    /**
+     * Used to return the square of the board that a Move corresponds to in a format that is easily readable by the user (e.g. D4, E5)
+     */
+    public String formattedIndex() {
+
+        // converting the row to a letter and the col to 1-based index
+        char rowChar = (char) ('A' + row);
+        return String.valueOf(rowChar) +
+                (col + 1);
+    }
 }
