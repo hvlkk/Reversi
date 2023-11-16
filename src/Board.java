@@ -1,16 +1,12 @@
-import javax.naming.NameClassPair;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class Board
 {
 	public static final int WHITE = 1;
     public static final int BLACK = -1;
     public static final int EMPTY = 0;
-    /*  TODO: Remove if no workaround found
-    private static final String WHITE_DISK = "⚪";
-    private static final String BLACK_DISK = "⚫";
-    private static final String EMPTY_SQUARE = "◻f";
-     */
     private static final int ROWS = 8;
     private static final int COLUMNS = 8;
 
@@ -109,13 +105,29 @@ public class Board
             System.out.println("|");
         }
         System.out.println("|___|_________________|");
+        System.out.println("Current scores:");
+        System.out.println("Black: " + blackScore);
+        System.out.println("White: " + whiteScore);
     }
 
     /**
-     * @param letter The player making the move
+     * Generates the children of the current state of the board.
+     * @param playerColour The player making the move
      * @return An arraylist of all the possible states we can get to from the board as is currently
      */
-	public ArrayList<Board> getChildren(int letter) {return null;}
+	public ArrayList<Board> getChildren(int playerColour) {
+        ArrayList<Board> children = new ArrayList<>();
+        for (int row = 0; row < ROWS; ++row) {
+            for (int col = 0; col < COLUMNS; ++col) {
+                if (isValidMove(row, col, playerColour)) {
+                    Board child = new Board(this);
+                    child.makeMove(row, col, playerColour);
+                    children.add(child);
+                }
+            }
+        }
+        return children;
+    }
 
     /**
      * The heuristic function. TODO: more complete desc
@@ -124,29 +136,11 @@ public class Board
 	public int evaluate () {return 0;}
 
     /**
-     * Making the assumption that the game does not end when a player is out of moves (as happens in some variations of
-     * the game), therefore the only way a state can be terminal is if the entire board is full.
-     * @return True if the game has ended, false if it has not.
-     */
-	public boolean isTerminal() {
-        for (int row = 0; row < ROWS; ++row) {
-            for (int col = 0; col < COLUMNS; ++col) {
-                if (gameBoard[row][col] != EMPTY) {
-                    return false;
-                }
-            }
-        }
-
-        // if all the squares have been filled
-        return true;
-    }
-
-    /**
-     * @param row The row entered
-     * @param col The column entered
+     * @param row The row entered.
+     * @param col The column entered.
      * @return True if the move entered is valid, false otherwise
      */
-    private boolean isValidMove(int row, int col) {
+    private boolean isValidMove(int row, int col, int playerColour) {
         // if the square entered is out of bounds
         if (row < 0 || col < 0 || row >= ROWS || col >= COLUMNS) {
             return false;
@@ -157,13 +151,119 @@ public class Board
             return false;
         }
 
+        int opponentColour = playerColour * -1;
+
         /* making a custom [8][2] 2D array called dimensions; each of the 8 rows consists of a "pair" (due to the lack
          * of a native Java Pair class), the "key" of which represents the difference in rows to the board square provided
          * as a parameter to this function, and the "value" of which similarly represents the difference in columns to the
-         * index we are currently checking.    */
+         * board square we are currently checking.    */
         int[][] directions = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
-        return true;
 
+        for (int[] direction: directions) {
+            int rowToExamine = row + direction[0];
+            int colToExamine = col + direction[1];
+
+            // if the index we are exploring is outside the board or refers to a corner square, continue
+            if (!indexInBounds(rowToExamine, colToExamine) || indexIsCorner(rowToExamine, colToExamine)) {
+                continue;
+            }
+
+            // while we keep coming across opponent pieces and the index does not go out of bounds, continue exploring
+            while (indexInBounds(rowToExamine, colToExamine) && gameBoard[rowToExamine][colToExamine] == opponentColour) {
+                rowToExamine += direction[0];
+                colToExamine += direction[1];
+            }
+
+            // if the loop ended because we found a piece of the player's, that means the move is valid
+            if (indexInBounds(rowToExamine, colToExamine) && gameBoard[rowToExamine][colToExamine] == playerColour) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Called once we have ensured that a move is valid. Updates the disk at the square given as parameter to the function,
+     * to the colour of the player making the move, and flips all related opponent disks accordingly.
+     * @param row The row entered.
+     * @param col The column entered.
+     * @param playerColour The colour of the player making the move
+     */
+    public void makeMove(int row, int col, int playerColour) {
+        // precautionary check
+        if (!isValidMove(row, col, playerColour)) {
+            return;
+        }
+
+        // placing the piece and making the necessary score adjustments
+        gameBoard[row][col] = playerColour;
+        if (playerColour == WHITE) {
+            ++whiteScore;
+        } else {
+            ++blackScore;
+        }
+        this.lastMove = new Move(row, col);
+
+        int opponentColour = playerColour * -1;
+        int[][] directions = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
+        for (int[] direction: directions) {
+            int rowToExamine = row + direction[0];
+            int colToExamine = col + direction[1];
+
+            // if the index we are exploring is outside the board or refers to a corner square, continue
+            if (!indexInBounds(rowToExamine, colToExamine) || indexIsCorner(rowToExamine, colToExamine)) {
+                continue;
+            }
+
+            // initialising a counter for flanked pieces, for each direction
+            int flankedPieces = 0;  // TODO: Make sure the calculations are as intended
+
+            // while we keep coming across opponent pieces and the index does not go out of bounds, continue exploring
+            while (indexInBounds(rowToExamine, colToExamine) && gameBoard[rowToExamine][colToExamine] == opponentColour) {
+                ++flankedPieces;
+                rowToExamine += direction[0];
+                colToExamine += direction[1];
+            }
+
+            // if the loop ended because we found a piece of the player's, update accordingly
+            if (indexInBounds(rowToExamine, colToExamine) && gameBoard[rowToExamine][colToExamine] == playerColour) {
+                // edit the scores accordingly
+                if (playerColour == WHITE) {
+                    whiteScore += flankedPieces;
+                    blackScore -= flankedPieces;
+                } else {
+                    blackScore += flankedPieces;
+                    whiteScore -= flankedPieces;
+                }
+
+                // and edit the board accordingly
+                int rowToEdit = row + direction[0];
+                int colToEdit = col + direction[1];
+
+                while (rowToEdit != rowToExamine && colToEdit != colToExamine) {
+                    gameBoard[rowToEdit][colToEdit] = playerColour;
+                    rowToEdit += direction[0];
+                    colToEdit += direction[1];
+                }
+            }
+        }
+    }
+
+    /**
+     * Making the assumption that the game does not end when a player is out of moves (as happens in some variations of
+     * reversi), therefore the only way a state can be terminal is if the entire board is full.
+     * @return True if the game has ended, false if it has not.
+     */
+    public boolean isTerminal() {
+        for (int row = 0; row < ROWS; ++row) {
+            for (int col = 0; col < COLUMNS; ++col) {
+                if (gameBoard[row][col] != EMPTY) {
+                    return false;
+                }
+            }
+        }
+        // if all the squares have been filled
+        return true;
     }
 	
 	public Move getLastMove()
@@ -207,6 +307,38 @@ public class Board
     public void calculateResults() {
 
     }
-	
-	
+
+    /**
+     * Helper function, returns whether a square is inside the board.
+     * @param row The row of the square.
+     * @param col The column of the square.
+     * @return True if the square is inside the board
+     */
+    private boolean indexInBounds(int row, int col) {
+        return row >=0 && row < ROWS && col >= 0 && col < COLUMNS;
+    }
+
+    /**
+     * Helper function, returns whether a square is in the corners of the board.
+     * @param row The row of the square.
+     * @param col The column of the square.
+     * @return True if the square is in the corners of the board
+     */
+    private boolean indexIsCorner(int row, int col) {
+        return  (row == 0 || row == ROWS-1) && (col == 0 || col == COLUMNS-1);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Board board)) return false;
+        return lastPlayer == board.lastPlayer && whiteScore == board.whiteScore && blackScore == board.blackScore && winner == board.winner && Arrays.deepEquals(gameBoard, board.gameBoard) && Objects.equals(lastMove, board.lastMove);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(lastPlayer, whiteScore, blackScore, winner, lastMove);
+        result = 31 * result + Arrays.deepHashCode(gameBoard);
+        return result;
+    }
 }
