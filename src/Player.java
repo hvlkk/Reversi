@@ -4,16 +4,16 @@ import java.util.Random;
 public class Player
 {
 	private final int maxDepth;
-    private final int playerLetter;
+    private final int playerColour;
 
     public Player() {
         this(2, Board.BLACK);
     }
 
-    public Player(int maxDepth, int playerLetter)
+    public Player(int maxDepth, int playerColour)
     {
         this.maxDepth = maxDepth;
-        this.playerLetter = playerLetter;
+        this.playerColour = playerColour;
     }
 
     /**
@@ -24,7 +24,7 @@ public class Player
      * @return The move as calculated by the minimax algorithm
      */
 	public Move minimax(Board board) {
-        if (playerLetter == Board.BLACK) {
+        if (playerColour == Board.BLACK) {
             return max(new Board(board), 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } else {
             return min(new Board(board), 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -52,14 +52,14 @@ public class Player
                     maxMove.update(currentMove);
                     maxValue = currentValue;
 
-                    /* pruning: If the max value currently recorded exceeds (or is equal to) beta, we have no reason to
-                     * further check this node's children, as they will never be returned to the parent no matter what. */
-                    if (currentValue >= beta) {
-                        return maxMove;
-                    }
                     // update alpha accordingly
                     alpha = Math.max(alpha, currentValue);
 
+                    /* pruning: If the max value currently recorded exceeds (or is equal to) beta, we have no reason to
+                     * further check this node's children, as they will never be returned to the parent no matter what. */
+                    if (alpha >= beta) {
+                        return maxMove;
+                    }
                 } else {
                     /* if the move we are currently exploring has a value equal to the current best recorded,
                      * we simulate a coin toss (with the help of rand) to decide which of the 2 to keep.
@@ -96,10 +96,10 @@ public class Player
                     minMove.update(currentMove);
                     minValue = currentValue;
 
-                    if (currentValue <= alpha) {
+                    beta = Math.min(beta, currentValue);
+                    if (beta <= alpha) {
                         return minMove;
                     }
-                    beta = Math.min(beta, currentValue);
                 } else {
                     /* Similarly, simulating another coin toss in case the proposed moves are of equal value.
                      * Here, for the sake of opposites, we will be naming this boolean variable "tails".      */
