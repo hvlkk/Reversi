@@ -1,3 +1,5 @@
+import java.util.Objects;
+
 public class Move
 {
     private int row;
@@ -77,24 +79,24 @@ public class Move
      */
     public String formattedIndex() {
         // converting the row to a letter and the col to 1-based index
-        char rowChar = (char) ('A' + row);
-        return String.valueOf(rowChar) + (col + 1);
+        char colChar = (char) ('A' + col);
+        return String.valueOf(colChar) + (row + 1);
     }
 
     /**
      * Used to convert the input from the user to a valid Move instance.
      * @param input The string that the user has entered (e.g. D4 or E5)
-     * @return The move that the user entered.
+     * @return The move instance.
      */
     public static Move readFormattedMove(String input) {
         input = input.strip();
         // precautionary check, if the input is invalid we return the default Move
-        if (input.length() != 2 || !isValidRowChar(input.charAt(0)) || !isValidColIndex(input.charAt(1))) {
+        if (input.length() != 2 || !isValidColChar(input.charAt(0)) || !isValidRowIndex(input.charAt(1))) {
             return new Move();
         }
-        char rowChar = Character.toUpperCase(input.charAt(0));
-        int row = rowChar - 'A';
-        int col = Character.getNumericValue(input.charAt(1)) - 1;
+        char colChar = Character.toUpperCase(input.charAt(0));
+        int col = colChar - 'A';
+        int row = Character.getNumericValue(input.charAt(1)) - 1;
 
         return new Move(row, col);
     }
@@ -104,7 +106,7 @@ public class Move
      * @param c The character that represents the row.
      * @return True if the character is a valid row index.
      */
-    private static boolean isValidRowChar(char c) {
+    private static boolean isValidColChar(char c) {
         return (c >= 'A' && c <= 'H') || (c >= 'a' && c <= 'h');
     }
 
@@ -113,7 +115,7 @@ public class Move
      * @param c The character that represents the column.
      * @return True if the character is a valid column index.
      */
-    private static boolean isValidColIndex(char c) {
+    private static boolean isValidRowIndex(char c) {
         return c >= '1' && c <= '8';
     }
 
@@ -123,5 +125,17 @@ public class Move
      */
     public boolean isDefault() {
         return this.row == -1 && this.col == -1;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Move move)) return false;
+        return row == move.row && col == move.col && value == move.value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(row, col, value);
     }
 }
