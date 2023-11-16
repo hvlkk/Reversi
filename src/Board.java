@@ -162,6 +162,8 @@ public class Board
         for (int[] direction: directions) {
             int rowToExamine = row + direction[0];
             int colToExamine = col + direction[1];
+            // initialising a counter for flanked pieces, for each direction
+            int flankedPieces = 0;
 
             // if the index we are exploring is outside the board or refers to a corner square, continue
             if (!indexInBounds(rowToExamine, colToExamine) || indexIsCorner(rowToExamine, colToExamine)) {
@@ -170,12 +172,13 @@ public class Board
 
             // while we keep coming across opponent pieces and the index does not go out of bounds, continue exploring
             while (indexInBounds(rowToExamine, colToExamine) && gameBoard[rowToExamine][colToExamine] == opponentColour) {
+                ++flankedPieces;
                 rowToExamine += direction[0];
                 colToExamine += direction[1];
             }
 
             // if the loop ended because we found a piece of the player's, that means the move is valid
-            if (indexInBounds(rowToExamine, colToExamine) && gameBoard[rowToExamine][colToExamine] == playerColour) {
+            if (indexInBounds(rowToExamine, colToExamine) && gameBoard[rowToExamine][colToExamine] == playerColour && flankedPieces > 0) {
                 return true;
             }
         }
@@ -226,7 +229,7 @@ public class Board
             }
 
             // if the loop ended because we found a piece of the player's, update accordingly
-            if (indexInBounds(rowToExamine, colToExamine) && gameBoard[rowToExamine][colToExamine] == playerColour) {
+            if (indexInBounds(rowToExamine, colToExamine) && gameBoard[rowToExamine][colToExamine] == playerColour && flankedPieces > 0) {
                 // edit the scores accordingly
                 if (playerColour == WHITE) {
                     whiteScore += flankedPieces;
