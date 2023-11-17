@@ -148,5 +148,26 @@ public class Reversi {
                 npcPlays = false;
             }
         }
+
+        int winner = board.getWinner();
+        if (winner != Board.BLACK && winner != Board.WHITE && winner != Board.EMPTY) {
+            // if calling getWinner fetched the error value instead of the acceptable values
+            throw new RuntimeException("Unexpected outcome.");
+        }
+
+        System.out.println("Game over!");
+        System.out.println("Final scores: ");
+        System.out.println("Human: " + board.getScore(humanColour));
+        System.out.println("AI: " + board.getScore(npcColour));
+        System.out.println();
+
+        if (winner == humanColour) {
+            System.out.println("You defeated our AI! Congratulations.");
+        } else if (winner == npcColour) {
+            System.out.println("You lost. Try again! With enough determination you will pull through.");
+        } else {
+            System.out.println("The game ended in a tie!");
+        }
+
     }
 }
