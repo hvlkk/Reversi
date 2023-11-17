@@ -5,15 +5,13 @@ public class Player
 {
 	private final int maxDepth;
     private final int playerColour;
-
-    public Player() {
-        this(2, Board.BLACK);
-    }
+    private final Random random;    // we will be using a random boolean to solve ties in minimax values
 
     public Player(int maxDepth, int playerColour)
     {
         this.maxDepth = maxDepth;
         this.playerColour = playerColour;
+        this.random = new Random();
     }
 
     /**
@@ -32,7 +30,6 @@ public class Player
     }
 	
 	public Move max(Board board, int depth, int alpha, int beta) {
-        Random rand = new Random();
         ArrayList<Board> children = board.getChildren(Board.BLACK); // as black has called max
 
         /* if we have either reached the max depth allowed or reached a terminal board state, we return
@@ -64,7 +61,7 @@ public class Player
                     /* if the move we are currently exploring has a value equal to the current best recorded,
                      * we simulate a coin toss (with the help of rand) to decide which of the 2 to keep.
                      * If the hypothetical coin landed on heads, we keep the new value over the current max.    */
-                    boolean heads = rand.nextBoolean();
+                    boolean heads = random.nextBoolean();
                     if (heads) {
                         maxMove.update(currentMove);
                     }
@@ -72,10 +69,9 @@ public class Player
             }
         }
         return maxMove;
-    }
-	
-	public Move min(Board board, int depth, int alpha, int beta) {
-        Random rand = new Random();
+}
+
+    public Move min(Board board, int depth, int alpha, int beta) {
         ArrayList<Board> children = board.getChildren(Board.WHITE); // as white has called min
 
         /* if we have either reached the max depth allowed or reached a terminal board state, we return
@@ -103,7 +99,7 @@ public class Player
                 } else {
                     /* Similarly, simulating another coin toss in case the proposed moves are of equal value.
                      * Here, for the sake of opposites, we will be naming this boolean variable "tails".      */
-                    boolean tails = rand.nextBoolean();
+                    boolean tails = random.nextBoolean();
                     if (tails) {
                         minMove.update(currentMove);
                     }
