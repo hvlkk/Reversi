@@ -13,6 +13,12 @@ public class Move
         this.value = 0;
     }
 
+    public Move(Move move) {
+        this.row = move.row;
+        this.col = move.col;
+        this.value = move.value;
+    }
+
     public Move(int row, int col)
     {
         this.row = row;
