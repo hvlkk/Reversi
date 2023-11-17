@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Scanner;
 
 /**
@@ -39,7 +40,7 @@ public class Reversi {
         }
 
         String answer = " ";
-        while (!(answer.contains("yes") || answer.contains("no"))) {
+        while (!(answer.equals("yes") || answer.equals("y") || answer.equals("no") || answer.equals("n"))) {
             System.out.println("Would you like to play first? Answer yes or no.");
             answer = scanner.nextLine().toLowerCase().strip();
         }
@@ -47,10 +48,10 @@ public class Reversi {
         Player npc;
         int npcColour;
         int humanColour;
-        if (answer.equals("yes")) {
+        if (answer.equals("yes") || answer.equals("y")) {
             npc = new Player(depth, Board.WHITE);
-            humanColour = Board.BLACK;
             npcColour = Board.WHITE;
+            humanColour = Board.BLACK;
             npcPlays = false;
         } else {
             npc = new Player(depth, Board.BLACK);
@@ -58,7 +59,6 @@ public class Reversi {
             humanColour = Board.WHITE;
             npcPlays = true;
         }
-
         Board board = new Board();
         board.print();
 
@@ -66,28 +66,87 @@ public class Reversi {
         while (!board.isTerminal()) {
             // if it is the human's turn
             if (!npcPlays) {
-
-                /* fetching the children of the current state of the board; to be used in order to print available moves
-                 * to the user, in order to better the user experience.  */
-                ArrayList<Board> children = board.getChildren(humanColour);
+                System.out.println("Human plays!");
 
                 // if there is no available move, print an appropriate message and pass the turn to AI again
-                if (children.isEmpty()) {
+                if (!board.canPlay(humanColour)) {
                     System.out.println("There is no available move to be made! AI plays again.");
+                    board.setLastPlayer(humanColour);
                     npcPlays = true;
                     continue;
                 }
-                System.out.println("Please enter the square you wish to place a disk in.");
-                System.out.print("Available moves: ");
-                for (int i = 0; i < children.size() - 1; ++i) {
-                    System.out.print(children.get(i).getLastMove().formattedIndex() + ", ");
+
+                // fetching the children of the current state of the board, in order to print available moves to the user
+                ArrayList<Board> children = board.getChildren(humanColour);
+
+                ArrayList<Move> availableMoves = new ArrayList<>();
+                for (Board child : children) {
+                    availableMoves.add(child.getLastMove());
                 }
-                System.out.println(children.get(children.size()-1).getLastMove().formattedIndex() + ".");
+
+                //sorting moves so that it's friendlier visually
+                availableMoves.sort(
+                        Comparator.comparingInt(Move::getCol)
+                                .thenComparingInt(Move::getRow)
+                );
+
+                Move userMove = new Move();
+
+                while (!availableMoves.contains(userMove)) {
+                    // list the available moves (for user-friendliness)
+                    System.out.print("Available moves: ");
+                    for (int i = 0; i < availableMoves.size() - 1; ++i) {
+                        System.out.print(availableMoves.get(i).formattedIndex() + ", ");
+                    }
+                    System.out.println(availableMoves.get(availableMoves.size()-1).formattedIndex() + ".");
+
+                    // prompt the user for his move of choice
+                    System.out.println("Please enter the move you would like to make:");
+                    String formattedMove = scanner.nextLine();
+                    userMove = Move.readFormattedMove(formattedMove);
+
+                    // appropriate message if the move is not allowed
+                    if (!availableMoves.contains(userMove)) {
+                        System.out.println("Invalid move! Please enter a move from the available moves listed.");
+                    }
+                }
+                board.makeMove(userMove.getRow(), userMove.getCol(), humanColour);
+                board.print();
                 npcPlays = true;
             } else {
-                break;
+                System.out.println("AI plays!");
+
+                if (!board.canPlay(npcColour)) {
+                    System.out.println("There is no available move to be made! Human plays again.");
+                    board.setLastPlayer(npcColour);
+                    npcPlays = false;
+                    continue;
+                }
+
+                ArrayList<Board> children = board.getChildren(npcColour);
+                ArrayList<Move> moves = new ArrayList<>();
+                for (Board child: children) {
+                    moves.add(child.getLastMove());
+                }
+
+                //sorting moves so that it's friendlier visually
+                moves.sort(
+                        Comparator.comparingInt(Move::getCol)
+                                .thenComparingInt(Move::getRow)
+                );
+
+                System.out.print("Available moves: ");
+                for (int i = 0; i < moves.size() - 1; ++i) {
+                    System.out.print(moves.get(i).formattedIndex() + ", ");
+                }
+                System.out.println(moves.get(moves.size()-1).formattedIndex() + ".");
+
+                Move npcMove = npc.minimax(board);
+                System.out.println("AI move: " + npcMove.formattedIndex());
+                board.makeMove(npcMove.getRow(), npcMove.getCol(), npcColour);
+                board.print();
+                npcPlays = false;
             }
         }
-
     }
 }
