@@ -15,7 +15,6 @@ public class Board
     private int lastPlayer;
     private int whiteScore;
     private int blackScore;
-    private int winner;
 
     private Move lastMove;
 
@@ -31,7 +30,7 @@ public class Board
 	// copy constructor
     public Board(Board board) {
         this.gameBoard = new int[ROWS][COLUMNS];
-        this.lastMove = board.lastMove;
+        this.lastMove = new Move(board.lastMove);
         this.lastPlayer = board.lastPlayer;
         for (int row = 0; row < 8; ++row) {
             System.arraycopy(board.gameBoard[row], 0, this.gameBoard[row], 0, 8);
@@ -111,6 +110,21 @@ public class Board
     }
 
     /**
+     * Used to check whether a player has moves available to him, or if they have to forfeit their turn.
+     * @param playerColour The colour of the player we check for.
+     * @return True if the player can play, false if not.
+     */
+    public boolean canPlay(int playerColour) {
+        if (playerColour == WHITE) {
+            return whiteScore > 0 && !getChildren(playerColour).isEmpty();
+        } else if (playerColour == BLACK) {
+            return blackScore > 0 && !getChildren(playerColour).isEmpty();
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Generates the children of the current state of the board.
      * @param playerColour The player making the move
      * @return An arraylist of all the possible states we can get to from the board as is currently
@@ -130,10 +144,30 @@ public class Board
     }
 
     /**
-     * The heuristic function. TODO: more complete desc
+     * The heuristic function.
      * @return The result of the heuristic function
      */
-	public int evaluate () {return 0;}
+    // TODO: more complete desc
+	public int evaluate () {
+        int cornerEvaluation = gameBoard[0][0] + gameBoard[0][7] + gameBoard[7][0] + gameBoard[7][7];
+        int sidesEvaluation = 0;
+        int pieceEvaluation = 0;
+
+        for(int row = 0; row < ROWS; ++row){
+            for (int col = 0; col < COLUMNS; ++col){
+                pieceEvaluation += gameBoard[row][col];
+
+                // sides: checking
+                if((row == 0 || row == 7) && (col != 0 && col != 7)){
+                    sidesEvaluation += gameBoard[row][col];
+                }
+                else if((col == 0 || col == 7) && (row != 0 && row != 7)){
+                    sidesEvaluation += gameBoard[row][col];
+                }
+            }
+        }
+        return 45 * cornerEvaluation + 30 * sidesEvaluation + 10 * pieceEvaluation;
+    }
 
     /**
      * @param row The row entered.
@@ -205,7 +239,8 @@ public class Board
         } else {
             ++blackScore;
         }
-        this.lastMove = new Move(row, col);
+        setLastMove(new Move(row, col));
+        setLastPlayer(playerColour);
 
         int opponentColour = playerColour * -1;
         int[][] directions = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
@@ -219,7 +254,7 @@ public class Board
             }
 
             // initialising a counter for flanked pieces, for each direction
-            int flankedPieces = 0;  // TODO: Make sure the calculations are as intended
+            int flankedPieces = 0;
 
             // while we keep coming across opponent pieces and the index does not go out of bounds, continue exploring
             while (indexInBounds(rowToExamine, colToExamine) && gameBoard[rowToExamine][colToExamine] == opponentColour) {
@@ -243,7 +278,7 @@ public class Board
                 int rowToEdit = row + direction[0];
                 int colToEdit = col + direction[1];
 
-                while (rowToEdit != rowToExamine && colToEdit != colToExamine) {
+                for (int i = 0; i < flankedPieces; ++i) {
                     gameBoard[rowToEdit][colToEdit] = playerColour;
                     rowToEdit += direction[0];
                     colToEdit += direction[1];
@@ -253,11 +288,16 @@ public class Board
     }
 
     /**
-     * Making the assumption that the game does not end when a player is out of moves (as happens in some variations of
-     * reversi), therefore the only way a state can be terminal is if the entire board is full.
-     * @return True if the game has ended, false if it has not.
+     * Making the assumption that the game ends if the board is full or if one player has no disks left on the board, and
+     * it does not end when a player is out of moves (as happens in some variations of reversi). <b>Overly complex
+     * conditions where a player is mathematically impossible to win will not be checked.</b>
+     * @return True if the game has ended according to the above conditions, false if it has not.
      */
     public boolean isTerminal() {
+        if (whiteScore == 0 || blackScore == 0) {
+            return true;
+        }
+
         for (int row = 0; row < ROWS; ++row) {
             for (int col = 0; col < COLUMNS; ++col) {
                 if (gameBoard[row][col] != EMPTY) {
@@ -294,9 +334,7 @@ public class Board
 
     public void setLastMove(Move lastMove)
     {
-        this.lastMove.setRow(lastMove.getRow());
-        this.lastMove.setCol(lastMove.getCol());
-        this.lastMove.setValue(lastMove.getValue());
+        this.lastMove = new Move(lastMove);
     }
 
     public void setLastPlayer(int lastPlayer)
@@ -305,10 +343,36 @@ public class Board
     }
 
     /**
-     * Calculates the scores for both players, and the winner (if there is one) as a result
+     * @return The count of disks on the board for the player whose colour is passed as parameter. Returns
+     * Integer.MIN_VALUE if passed an illegal argument.
      */
-    public void calculateResults() {
+    public int getScore(int playerColour) {
+        if (playerColour == Board.WHITE) {
+            return whiteScore;
+        } else if (playerColour == Board.BLACK) {
+            return blackScore;
+        }
+        return Integer.MIN_VALUE;
+    }
 
+    /**
+     * Called to calculate the winner of the game.
+     * @return Board.WHITE (1) if white won, Board.BLACK (-1) if black won, Board.EMPTY (0) if the game ended as a tie,
+     * and Integer.MIN_VALUE (as a sign of error) if the game is not over yet.
+     */
+    public int getWinner() {
+        // precautionary check
+        if (!isTerminal()) {
+            return Integer.MIN_VALUE;
+        }
+
+        if (whiteScore > blackScore) {
+            return WHITE;
+        } else if (blackScore > whiteScore) {
+            return BLACK;
+        } else {
+            return EMPTY;
+        }
     }
 
     /**
@@ -335,12 +399,12 @@ public class Board
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Board board)) return false;
-        return lastPlayer == board.lastPlayer && whiteScore == board.whiteScore && blackScore == board.blackScore && winner == board.winner && Arrays.deepEquals(gameBoard, board.gameBoard) && Objects.equals(lastMove, board.lastMove);
+        return lastPlayer == board.lastPlayer && whiteScore == board.whiteScore && blackScore == board.blackScore && Arrays.deepEquals(gameBoard, board.gameBoard) && Objects.equals(lastMove, board.lastMove);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(lastPlayer, whiteScore, blackScore, winner, lastMove);
+        int result = Objects.hash(lastPlayer, whiteScore, blackScore, lastMove);
         result = 31 * result + Arrays.deepHashCode(gameBoard);
         return result;
     }
