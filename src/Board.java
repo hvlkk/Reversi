@@ -166,7 +166,7 @@ public class Board
                 }
             }
         }
-        return 45 * cornerEvaluation + 30 * sidesEvaluation + 10 * pieceEvaluation;
+        return 15 * cornerEvaluation + 10 * sidesEvaluation + 5 * pieceEvaluation;
     }
 
     /**
@@ -200,7 +200,7 @@ public class Board
             int flankedPieces = 0;
 
             // if the index we are exploring is outside the board or refers to a corner square, continue
-            if (!indexInBounds(rowToExamine, colToExamine) || indexIsCorner(rowToExamine, colToExamine)) {
+            if (!indexInBounds(rowToExamine, colToExamine)) {
                 continue;
             }
 
@@ -300,7 +300,7 @@ public class Board
 
         for (int row = 0; row < ROWS; ++row) {
             for (int col = 0; col < COLUMNS; ++col) {
-                if (gameBoard[row][col] != EMPTY) {
+                if (gameBoard[row][col] == EMPTY) {
                     return false;
                 }
             }
