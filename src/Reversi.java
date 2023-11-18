@@ -155,6 +155,7 @@ public class Reversi {
             throw new RuntimeException("Unexpected outcome.");
         }
 
+        System.out.println();
         System.out.println("Game over!");
         System.out.println("Final scores: ");
         System.out.println("Human: " + board.getScore(humanColour));
@@ -164,7 +165,7 @@ public class Reversi {
         if (winner == humanColour) {
             System.out.println("You defeated our AI! Congratulations.");
         } else if (winner == npcColour) {
-            System.out.println("You lost. Try again! With enough determination you will pull through.");
+            System.out.println("You lost. Try again! You can pull through.");
         } else {
             System.out.println("The game ended in a tie!");
         }
