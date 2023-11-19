@@ -71,16 +71,6 @@ public class Move
     }
 
     /**
-     * Updates the contents of the Move instance this method is called upon to the contents of the Move instance passed as parameter.
-     * @param other The Move instance the contents of which we will be keeping.
-     */
-    public void update(Move other) {
-        this.setRow(other.getRow());
-        this.setCol(other.getCol());
-        this.setValue(other.getValue());
-    }
-
-    /**
      * Used to return the square of the board that a Move corresponds to in a format that is easily readable by the user (e.g. D4 or E5)
      */
     public String formattedIndex() {
@@ -123,14 +113,6 @@ public class Move
      */
     private static boolean isValidRowIndex(char c) {
         return c >= '1' && c <= '8';
-    }
-
-    /**
-     * Used to check whether a move is the default move, aka initialised with the default constructor.
-     * @return True if it is the default move, false otherwise.
-     */
-    public boolean isDefault() {
-        return this.row == -1 && this.col == -1;
     }
 
     @Override
