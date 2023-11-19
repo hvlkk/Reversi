@@ -22,9 +22,11 @@ public class Player
      * @return The move as calculated by the minimax algorithm
      */
 	public Move minimax(Board board) {
-        if (playerColour == Board.BLACK) {
+        if (playerColour == Board.WHITE) {
+            // if the AI has the white disks, it wants to maximise the value it gets out of its move (since Board.WHITE == 1)
             return max(new Board(board), 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } else {
+            // similarly, if the AI has the black disks, it wants to minimise the value it gets out of its move (since Board.BLACK == -1)
             return min(new Board(board), 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
         }
     }
@@ -37,7 +39,7 @@ public class Player
      * @return The move the maximiser node is predicted to make given the current state of the board.
      */
     public Move max(Board board, int depth, int alpha, int beta) {
-        ArrayList<Board> children = new ArrayList<>(board.getChildren(Board.BLACK));    // as black has called max
+        ArrayList<Board> children = new ArrayList<>(board.getChildren(Board.WHITE));    // as white has called max
 
         /* if we have either reached the max depth allowed or reached a terminal board state, we return
          * the move that brought the board to this state, combined with the value of its heuristic function */
@@ -94,7 +96,7 @@ public class Player
      * @return The move the minimiser node is predicted to make given the current state of the board.
      */
     public Move min(Board board, int depth, int alpha, int beta) {
-        ArrayList<Board> children = board.getChildren(Board.WHITE); // as white has called min
+        ArrayList<Board> children = board.getChildren(Board.BLACK); // as black has called min
 
         /* if we have either reached the max depth allowed or reached a terminal board state, we return
          * the move that brought the board to this state, combined with the value of its heuristic function */
