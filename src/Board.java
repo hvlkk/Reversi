@@ -185,10 +185,7 @@ public class Board
                 }
 
                 // edges: checking the pieces that are at the edges of the board, but not at the corners
-                if((row == 0 || row == 7) && (col != 0 && col != 7)){
-                    edgeEvaluation += gameBoard[row][col];
-                }
-                else if((col == 0 || col == 7) && (row != 0 && row != 7)){
+                if(indexIsAtEdges(row, col)){
                     edgeEvaluation += gameBoard[row][col];
                 }
             }
