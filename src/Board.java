@@ -32,8 +32,8 @@ public class Board
         this.gameBoard = new int[ROWS][COLUMNS];
         this.lastMove = new Move(board.lastMove);
         this.lastPlayer = board.lastPlayer;
-        for (int row = 0; row < 8; ++row) {
-            System.arraycopy(board.gameBoard[row], 0, this.gameBoard[row], 0, 8);
+        for (int row = 0; row < ROWS; ++row) {
+            System.arraycopy(board.gameBoard[row], 0, this.gameBoard[row], 0, COLUMNS);
         }
         this.whiteScore = board.whiteScore;
         this.blackScore = board.blackScore;
@@ -148,24 +148,23 @@ public class Board
      * edges of the board, squares that are considered slightly more dangerous, etc.
      * @return The result of the heuristic function
      */
-    // TODO: more complete desc
 	public int evaluate () {
         int evaluation = 0; // will mark the final result of our heuristic function
 
         // if this play leads to the game ending
         if (isTerminal()) {
             if (blackScore > whiteScore) {
-                evaluation += 4000;
+                evaluation += 3000;
             } else if (whiteScore > blackScore) {
-                evaluation -= 4000;
+                evaluation -= 3000;
             }
         }
 
         // if this play leads to a player's opponent not being able to play
         if (!canPlay(BLACK)) {
-            evaluation -= 2000;
+            evaluation -= 1500;
         } else if (!canPlay(WHITE)) {
-            evaluation += 2000;
+            evaluation += 1500;
         }
 
 
@@ -190,7 +189,7 @@ public class Board
                 }
             }
         }
-        evaluation += 285 * cornerEvaluation + 85 * dangerEvaluation + 70 * edgeEvaluation + 35 * pieceEvaluation;
+        evaluation += 280 * cornerEvaluation + 85 * dangerEvaluation + 70 * edgeEvaluation + 35 * pieceEvaluation;
         return evaluation;
     }
 
@@ -243,9 +242,9 @@ public class Board
         /* an index is considered dangerous if the sum of its row and col is <= the sum of the row and col of a corner
          * square + 2 (to accommodate for horizontal, vertical and diagonal directions. */
         boolean topLeft = (row + col) - (0 + 0) <= 2 && (row <= 1) && (col <= 1);
-        boolean topRight = (row + col) - (0 + 7) <= 2 && (row <= 1) && (col <= COLUMNS - 1);
-        boolean bottomLeft = (row + col) - (7 + 0) <= 2 && (row <= ROWS - 1) && (col <= 1);
-        boolean bottomRight = (row + col) - (7 + 7) <= 2 && (row <= ROWS - 1) && (col <= COLUMNS - 1);
+        boolean topRight = (row + col) - (0 + (COLUMNS - 1)) <= 2 && (row <= 1) && (col <= COLUMNS - 1);
+        boolean bottomLeft = (row + col) - ((ROWS - 1) + 0) <= 2 && (row <= ROWS - 1) && (col <= 1);
+        boolean bottomRight = (row + col) - ((ROWS - 1) + (COLUMNS - 1)) <= 2 && (row <= ROWS - 1) && (col <= COLUMNS - 1);
         return topLeft || topRight || bottomLeft || bottomRight;
     }
 
