@@ -26,8 +26,7 @@ public class Board
         this.whiteScore = 2;
         this.blackScore = 2;
     }
-	
-	// copy constructor
+
     public Board(Board board) {
         this.gameBoard = new int[ROWS][COLUMNS];
         this.lastMove = new Move(board.lastMove);
@@ -74,7 +73,7 @@ public class Board
             }
 
             // updating the 3 remaining columns
-            for (++col ; col < COLUMNS; ++col) {
+            for (++col; col < COLUMNS; ++col) {
                 this.gameBoard[row][col] = EMPTY;
             }
         }
@@ -279,7 +278,7 @@ public class Board
             int flankedPieces = 0;
 
             // if the index we are exploring is outside the board or refers to a corner square, continue
-            if (!indexInBounds(rowToExamine, colToExamine)) {
+            if (!indexInBounds(rowToExamine, colToExamine) || indexIsCorner(rowToExamine, colToExamine)) {
                 continue;
             }
 
