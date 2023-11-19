@@ -188,7 +188,7 @@ public class Board
                 }
             }
         }
-        evaluation += 280 * cornerEvaluation + 85 * dangerEvaluation + 70 * edgeEvaluation + 35 * pieceEvaluation;
+        evaluation += 280 * cornerEvaluation + 80 * dangerEvaluation + 70 * edgeEvaluation + 35 * pieceEvaluation;
         return evaluation;
     }
 
@@ -366,25 +366,13 @@ public class Board
     }
 
     /**
-     * Making the assumption that the game ends if the board is full, if one player has no disks left on the board, or
-     * if both players have no valid moves left. <b>Overly complex conditions where a player is mathematically
-     * impossible to win will not be checked.</b>
+     * Making the assumption that the game ends if one player has no disks left on the board, or if both players have no
+     * valid moves left (which also covers the case of the board being full). <b>Overly complex conditions where a player
+     * is mathematically impossible to win will not be checked.</b>
      * @return True if the game has ended according to the above conditions, false if it has not.
      */
     public boolean isTerminal() {
-        if (whiteScore == 0 || blackScore == 0 || (!canPlay(WHITE) && !canPlay(BLACK))) {
-            return true;
-        }
-
-        for (int row = 0; row < ROWS; ++row) {
-            for (int col = 0; col < COLUMNS; ++col) {
-                if (gameBoard[row][col] == EMPTY) {
-                    return false;
-                }
-            }
-        }
-        // if all the squares have been filled
-        return true;
+        return whiteScore == 0 || blackScore == 0 || (!canPlay(WHITE) && !canPlay(BLACK));
     }
 	
 	public Move getLastMove()
