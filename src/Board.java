@@ -4,13 +4,13 @@ import java.util.Objects;
 
 public class Board
 {
-	public static final int WHITE = 1;
+    public static final int WHITE = 1;
     public static final int BLACK = -1;
     public static final int EMPTY = 0;
     private static final int ROWS = 8;
     private static final int COLUMNS = 8;
 
-    private int[][] gameBoard;
+    private final int[][] gameBoard;
 
     private int lastPlayer;
     private int whiteScore;
@@ -144,29 +144,112 @@ public class Board
     }
 
     /**
-     * The heuristic function.
+     * The heuristic function. Takes multiple scenarios into consideration, including corner squares, squares at the
+     * edges of the board, squares that are considered slightly more dangerous, etc.
      * @return The result of the heuristic function
      */
     // TODO: more complete desc
 	public int evaluate () {
+        int evaluation = 0; // will mark the final result of our heuristic function
+
+        // if this play leads to the game ending
+        if (isTerminal()) {
+            if (blackScore > whiteScore) {
+                evaluation += 4000;
+            } else if (whiteScore > blackScore) {
+                evaluation -= 4000;
+            }
+        }
+
+        // if this play leads to a player's opponent not being able to play
+        if (!canPlay(BLACK)) {
+            evaluation -= 2000;
+        } else if (!canPlay(WHITE)) {
+            evaluation += 2000;
+        }
+
+
         int cornerEvaluation = gameBoard[0][0] + gameBoard[0][7] + gameBoard[7][0] + gameBoard[7][7];
-        int sidesEvaluation = 0;
+        int edgeEvaluation = 0;
         int pieceEvaluation = 0;
+        int dangerEvaluation = 0;
 
         for(int row = 0; row < ROWS; ++row){
             for (int col = 0; col < COLUMNS; ++col){
                 pieceEvaluation += gameBoard[row][col];
 
-                // sides: checking
+                /* a square being marked as dangerous works against the player who puts a disk there. Therefore, taking
+                 * away from the current score based on the colour of the piece. */
+                if (indexIsDangerous(row, col)) {
+                    dangerEvaluation -= gameBoard[row][col];
+                }
+
+                // edges: checking the pieces that are at the edges of the board, but not at the corners
                 if((row == 0 || row == 7) && (col != 0 && col != 7)){
-                    sidesEvaluation += gameBoard[row][col];
+                    edgeEvaluation += gameBoard[row][col];
                 }
                 else if((col == 0 || col == 7) && (row != 0 && row != 7)){
-                    sidesEvaluation += gameBoard[row][col];
+                    edgeEvaluation += gameBoard[row][col];
                 }
             }
         }
-        return 15 * cornerEvaluation + 10 * sidesEvaluation + 5 * pieceEvaluation;
+        evaluation += 285 * cornerEvaluation + 85 * dangerEvaluation + 70 * edgeEvaluation + 35 * pieceEvaluation;
+        return evaluation;
+    }
+
+    /**
+     * Helper function, returns whether a square is inside the board.
+     * @param row The row of the square.
+     * @param col The column of the square.
+     * @return True if the square is inside the board.
+     */
+    private boolean indexInBounds(int row, int col) {
+        return row >=0 && row < ROWS && col >= 0 && col < COLUMNS;
+    }
+
+    /**
+     * Helper function, returns whether a square is at the edges of the board.
+     * @param row The row of the square.
+     * @param col The column of the square.
+     * @return True if the square is at the edges of the board.
+     */
+    private boolean indexIsAtEdges(int row, int col) {
+        boolean topEdge = row == 0 && col != 0 && col != COLUMNS - 1;
+        boolean bottomEdge = row == ROWS - 1 && col != 0 && col != COLUMNS - 1;
+        boolean leftEdge = col == 0 && row != 0 && row != ROWS - 1;
+        boolean rightEdge = col == COLUMNS -1 && row != 0 && row != ROWS - 1;
+        return topEdge || bottomEdge || leftEdge || rightEdge;
+    }
+
+    /**
+     * Helper function, returns whether a square is in the corners of the board.
+     * @param row The row of the square.
+     * @param col The column of the square.
+     * @return True if the square is in the corners of the board.
+     */
+    private boolean indexIsCorner(int row, int col) {
+        return  (row == 0 || row == ROWS-1) && (col == 0 || col == COLUMNS-1);
+    }
+
+    /**
+     * Helper function, returns whether an index is in a square that is identified as dangerous. A dangerous square is a
+     * square that is only one square away (vertically, horizontally or diagonally) from a corner square.
+     * @param row The row to be checked.
+     * @param col The column to be checked.
+     * @return True if the square is a "danger square", false otherwise.
+     */
+    private boolean indexIsDangerous(int row, int col) {
+        if (indexIsCorner(row, col)) {
+            return false;
+        }
+
+        /* an index is considered dangerous if the sum of its row and col is <= the sum of the row and col of a corner
+         * square + 2 (to accommodate for horizontal, vertical and diagonal directions. */
+        boolean topLeft = (row + col) - (0 + 0) <= 2 && (row <= 1) && (col <= 1);
+        boolean topRight = (row + col) - (0 + 7) <= 2 && (row <= 1) && (col <= COLUMNS - 1);
+        boolean bottomLeft = (row + col) - (7 + 0) <= 2 && (row <= ROWS - 1) && (col <= 1);
+        boolean bottomRight = (row + col) - (7 + 7) <= 2 && (row <= ROWS - 1) && (col <= COLUMNS - 1);
+        return topLeft || topRight || bottomLeft || bottomRight;
     }
 
     /**
@@ -288,13 +371,13 @@ public class Board
     }
 
     /**
-     * Making the assumption that the game ends if the board is full or if one player has no disks left on the board, and
-     * it does not end when a player is out of moves (as happens in some variations of reversi). <b>Overly complex
-     * conditions where a player is mathematically impossible to win will not be checked.</b>
+     * Making the assumption that the game ends if the board is full, if one player has no disks left on the board, or
+     * if both players have no valid moves left. <b>Overly complex conditions where a player is mathematically
+     * impossible to win will not be checked.</b>
      * @return True if the game has ended according to the above conditions, false if it has not.
      */
     public boolean isTerminal() {
-        if (whiteScore == 0 || blackScore == 0) {
+        if (whiteScore == 0 || blackScore == 0 || (!canPlay(WHITE) && !canPlay(BLACK))) {
             return true;
         }
 
@@ -312,24 +395,6 @@ public class Board
 	public Move getLastMove()
     {
         return this.lastMove;
-    }
-
-    public int getLastPlayer()
-    {
-        return this.lastPlayer;
-    }
-
-    public int[][] getGameBoard()
-    {
-        return this.gameBoard;
-    }
-	
-	public void setGameBoard(int[][] gameBoard)
-    {
-        for(int row = 0; row < ROWS; row++)
-        {
-            System.arraycopy(gameBoard[row], 0, this.gameBoard[row], 0, COLUMNS);
-        }
     }
 
     public void setLastMove(Move lastMove)
@@ -373,26 +438,6 @@ public class Board
         } else {
             return EMPTY;
         }
-    }
-
-    /**
-     * Helper function, returns whether a square is inside the board.
-     * @param row The row of the square.
-     * @param col The column of the square.
-     * @return True if the square is inside the board
-     */
-    private boolean indexInBounds(int row, int col) {
-        return row >=0 && row < ROWS && col >= 0 && col < COLUMNS;
-    }
-
-    /**
-     * Helper function, returns whether a square is in the corners of the board.
-     * @param row The row of the square.
-     * @param col The column of the square.
-     * @return True if the square is in the corners of the board
-     */
-    private boolean indexIsCorner(int row, int col) {
-        return  (row == 0 || row == ROWS-1) && (col == 0 || col == COLUMNS-1);
     }
 
     @Override
