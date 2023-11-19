@@ -2,18 +2,24 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Scanner;
 
+import static java.lang.Thread.sleep;
+
 /**
  * The class containing the program's main method.
  */
 public class Reversi {
     public static void main(String[] args) {
-        reversiLoop();
+        try {
+            reversiLoop();
+        } catch (InterruptedException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     /**
      * The method where the main loop of our reversi program occurs.
      */
-    private static void reversiLoop() {
+    private static void reversiLoop() throws InterruptedException {
         Scanner scanner = new Scanner(System.in);
         System.out.println("REVERSI");
 
@@ -142,6 +148,11 @@ public class Reversi {
                 System.out.println(moves.get(moves.size()-1).formattedIndex() + ".");
 
                 Move npcMove = npc.minimax(board);
+
+                // introducing a slight delay in cases that are not expensive by nature
+                if (!(depth == 8 && children.size() >= 5)) {
+                    sleep(1000);
+                }
                 System.out.println("AI move: " + npcMove.formattedIndex());
                 board.makeMove(npcMove.getRow(), npcMove.getCol(), npcColour);
                 board.print();
@@ -169,6 +180,5 @@ public class Reversi {
         } else {
             System.out.println("The game ended in a tie!");
         }
-
     }
 }
