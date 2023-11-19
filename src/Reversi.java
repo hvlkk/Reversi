@@ -27,7 +27,7 @@ public class Reversi {
          * the user pick freely. Available options are easy (depth of 2), normal (depth of 4), and hard (depth of 8). */
         String difficulty = " ";
         while (!difficulty.equals("1") && !difficulty.equals("2") && !difficulty.equals("3") &&
-                !difficulty.equals("Easy") && !difficulty.equals("Normal") && !difficulty.equals("Hard")) {
+                !difficulty.equals("easy") && !difficulty.equals("normal") && !difficulty.equals("hard")) {
             System.out.println("Available difficulties:");
             System.out.println("1. Easy");
             System.out.println("2. Normal");
@@ -37,9 +37,9 @@ public class Reversi {
         }
 
         int depth;
-        if (difficulty.equals("1") || difficulty.equals("Easy")) {
+        if (difficulty.equals("1") || difficulty.equals("easy")) {
             depth = 2;
-        } else if (difficulty.equals("2") || difficulty.equals("Normal")) {
+        } else if (difficulty.equals("2") || difficulty.equals("normal")) {
             depth = 4;
         } else {
             depth = 8;
@@ -72,7 +72,13 @@ public class Reversi {
         while (!board.isTerminal()) {
             // if it is the human's turn
             if (!npcPlays) {
-                System.out.println("Human plays!");
+                System.out.print("Human ");
+                if (humanColour == Board.WHITE) {
+                    System.out.print("(white) ");
+                } else {
+                    System.out.print("(black) ");
+                }
+                System.out.println("plays!");
 
                 // if there is no available move, print an appropriate message and pass the turn to AI again
                 if (!board.canPlay(humanColour)) {
@@ -120,7 +126,13 @@ public class Reversi {
                 board.print();
                 npcPlays = true;
             } else {
-                System.out.println("AI plays!");
+                System.out.print("AI ");
+                if (npcColour == Board.WHITE) {
+                    System.out.print("(white) ");
+                } else {
+                    System.out.print("(black) ");
+                }
+                System.out.println("plays!");
 
                 if (!board.canPlay(npcColour)) {
                     System.out.println("There is no available move to be made! Human plays again.");
@@ -151,7 +163,7 @@ public class Reversi {
 
                 // introducing a slight delay in cases that are not expensive by nature
                 if (!(depth == 8 && children.size() >= 5)) {
-                    sleep(1000);
+                    sleep(1250);
                 }
                 System.out.println("AI move: " + npcMove.formattedIndex());
                 board.makeMove(npcMove.getRow(), npcMove.getCol(), npcColour);
@@ -169,8 +181,20 @@ public class Reversi {
         System.out.println();
         System.out.println("Game over!");
         System.out.println("Final scores: ");
-        System.out.println("Human: " + board.getScore(humanColour));
-        System.out.println("AI: " + board.getScore(npcColour));
+        System.out.print("Human ");
+        if (humanColour == Board.WHITE) {
+            System.out.print("(white): ");
+        } else {
+            System.out.print("(black): ");
+        }
+        System.out.println(board.getScore(humanColour));
+        System.out.print("AI ");
+        if (npcColour == Board.WHITE) {
+            System.out.print("(white): ");
+        } else {
+            System.out.print("(black): ");
+        }
+        System.out.println(board.getScore(npcColour));
         System.out.println();
 
         if (winner == humanColour) {
