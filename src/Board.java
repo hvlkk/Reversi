@@ -152,43 +152,43 @@ public class Board
 
         // if this play leads to the game ending
         if (isTerminal()) {
-            if (blackScore > whiteScore) {
-                evaluation += 3000;
-            } else if (whiteScore > blackScore) {
-                evaluation -= 3000;
+            if (whiteScore > blackScore) {
+                evaluation += 10000;
+            } else if (blackScore > whiteScore) {
+                evaluation -= 10000;
             }
+            return evaluation;
         }
 
         // if this play leads to a player's opponent not being able to play
         if (!canPlay(BLACK)) {
-            evaluation -= 1500;
+            evaluation += 3000;
         } else if (!canPlay(WHITE)) {
-            evaluation += 1500;
+            evaluation -= 3000;
         }
 
+        int cornerScore = gameBoard[0][0] + gameBoard[0][7] + gameBoard[7][0] + gameBoard[7][7];
+        int edgeScore = 0;
+        int dangerScore = 0;
+        int pieceScore = 0;
 
-        int cornerEvaluation = gameBoard[0][0] + gameBoard[0][7] + gameBoard[7][0] + gameBoard[7][7];
-        int edgeEvaluation = 0;
-        int pieceEvaluation = 0;
-        int dangerEvaluation = 0;
-
-        for(int row = 0; row < ROWS; ++row){
-            for (int col = 0; col < COLUMNS; ++col){
-                pieceEvaluation += gameBoard[row][col];
+        for (int row = 0; row < ROWS; ++row) {
+            for (int col = 0; col < COLUMNS; ++col) {
+                pieceScore += gameBoard[row][col];
 
                 /* a square being marked as dangerous works against the player who puts a disk there. Therefore, taking
                  * away from the current score based on the colour of the piece. */
                 if (indexIsDangerous(row, col)) {
-                    dangerEvaluation -= gameBoard[row][col];
+                    dangerScore -= gameBoard[row][col];
                 }
 
                 // edges: checking the pieces that are at the edges of the board, but not at the corners
-                if(indexIsAtEdges(row, col)){
-                    edgeEvaluation += gameBoard[row][col];
+                if (indexIsAtEdges(row, col)) {
+                    edgeScore += gameBoard[row][col];
                 }
             }
         }
-        evaluation += 280 * cornerEvaluation + 80 * dangerEvaluation + 70 * edgeEvaluation + 35 * pieceEvaluation;
+        evaluation += 200 * cornerScore + 85 * dangerScore + 60 * edgeScore + 10 * pieceScore;
         return evaluation;
     }
 
@@ -239,7 +239,7 @@ public class Board
         }
 
         /* an index is considered dangerous if the sum of its row and col is <= the sum of the row and col of a corner
-         * square + 2 (to accommodate for horizontal, vertical and diagonal directions. */
+         * square + 2 (to accommodate for horizontal, vertical and diagonal directions). */
         boolean topLeft = (row + col) - (0 + 0) <= 2 && (row <= 1) && (col <= 1);
         boolean topRight = (row + col) - (0 + (COLUMNS - 1)) <= 2 && (row <= 1) && (col <= COLUMNS - 1);
         boolean bottomLeft = (row + col) - ((ROWS - 1) + 0) <= 2 && (row <= ROWS - 1) && (col <= 1);
@@ -406,7 +406,7 @@ public class Board
     /**
      * Called to calculate the winner of the game.
      * @return Board.WHITE (1) if white won, Board.BLACK (-1) if black won, Board.EMPTY (0) if the game ended as a tie,
-     * and Integer.MIN_VALUE (as a sign of error) if the game is not over yet.
+     * and Integer.MIN_VALUE (as a sign of error) if the function was called before the game ended.
      */
     public int getWinner() {
         // precautionary check
