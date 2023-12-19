@@ -142,22 +142,22 @@ public class Reversi {
                 }
 
                 ArrayList<Board> children = board.getChildren(npcColour);
-                ArrayList<Move> moves = new ArrayList<>();
+                ArrayList<Move> availableMoves = new ArrayList<>();
                 for (Board child: children) {
-                    moves.add(child.getLastMove());
+                    availableMoves.add(child.getLastMove());
                 }
 
                 //sorting moves so that it's friendlier visually
-                moves.sort(
+                availableMoves.sort(
                         Comparator.comparingInt(Move::getCol)
                                 .thenComparingInt(Move::getRow)
                 );
 
                 System.out.print("Available moves: ");
-                for (int i = 0; i < moves.size() - 1; ++i) {
-                    System.out.print(moves.get(i).formattedIndex() + ", ");
+                for (int i = 0; i < availableMoves.size() - 1; ++i) {
+                    System.out.print(availableMoves.get(i).formattedIndex() + ", ");
                 }
-                System.out.println(moves.get(moves.size()-1).formattedIndex() + ".");
+                System.out.println(availableMoves.get(availableMoves.size()-1).formattedIndex() + ".");
 
                 Move npcMove = npc.minimax(board);
 
