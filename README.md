@@ -8,9 +8,6 @@ This project was developed as part of the first assignment for the Artificial In
 
 - **Single-player mode**: Play against a computer AI opponent that uses the Minimax algorithm.
 - **Difficulty settings**: Easy, normal, and hard are available as difficulties, each representing a different Minimax depth.
-- **Standard 8x8 board**: Classic Reversi board setup.
-- **Move validation**: Ensures that all moves comply with Reversi rules.
-- **Score tracking**: Keeps track of the score throughout the game.
 
 ## Roadmap
 
