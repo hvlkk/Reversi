@@ -96,7 +96,7 @@ public class Reversi {
                     availableMoves.add(child.getLastMove());
                 }
 
-                //sorting moves so that it's friendlier visually
+                // sorting moves so that it's friendlier visually
                 availableMoves.sort(
                         Comparator.comparingInt(Move::getCol)
                                 .thenComparingInt(Move::getRow)
@@ -147,7 +147,7 @@ public class Reversi {
                     availableMoves.add(child.getLastMove());
                 }
 
-                //sorting moves so that it's friendlier visually
+                // sorting moves so that it's friendlier visually
                 availableMoves.sort(
                         Comparator.comparingInt(Move::getCol)
                                 .thenComparingInt(Move::getRow)
@@ -162,7 +162,7 @@ public class Reversi {
                 Move npcMove = npc.minimax(board);
 
                 // introducing a slight delay in cases that are not expensive by nature
-                if (!(depth == 8 && children.size() >= 5)) {
+                if (depth != 8 && children.size() < 5) {
                     sleep(1250);
                 }
                 System.out.println("AI move: " + npcMove.formattedIndex());

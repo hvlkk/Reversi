@@ -43,14 +43,15 @@ public class Board
      * the centre 4, which (cols in letters, rows in numbers) will consist of white pieces on d4 & e5 and black on d5 & e4.
      */
     private void initialiseBoard() {
-        for (int row = 0; row < 3; ++row) {
+        int row;
+        for (row = 0; row < 3; ++row) {
             for (int col = 0; col < COLUMNS; ++col) {
                 this.gameBoard[row][col] = EMPTY;
             }
         }
 
         // separate for, for the 2 middle rows (3 and 4)
-        for (int row = 3; row < 5; ++row) {
+        for (row = 3; row < 5; ++row) {
             int col;
 
             // updating the first 3 columns
@@ -77,7 +78,7 @@ public class Board
                 this.gameBoard[row][col] = EMPTY;
             }
         }
-        for (int row = 5; row < ROWS; ++row) {
+        for (; row < ROWS; ++row) {
             for (int col = 0; col < COLUMNS; ++col) {
                 this.gameBoard[row][col] = EMPTY;
             }
@@ -109,7 +110,7 @@ public class Board
     }
 
     /**
-     * Used to check whether a player has moves available to him, or if they have to forfeit their turn.
+     * Used to check whether a player has moves available to them, or if they have to forfeit their turn.
      * @param playerColour The colour of the player we check for.
      * @return True if the player can play, false if not.
      */
@@ -148,10 +149,12 @@ public class Board
      * @return The result of the heuristic function
      */
 	public int evaluate () {
-        int evaluation = 0; // will mark the final result of our heuristic function
+        int evaluation = 0; // will mark the final result of the heuristic function
+        boolean whiteCanPlay = canPlay(WHITE);
+        boolean blackCanPlay = canPlay(BLACK);
 
         // if this play leads to the game ending
-        if (isTerminal()) {
+        if (isTerminal(whiteCanPlay, blackCanPlay)) {
             if (whiteScore > blackScore) {
                 evaluation += 10000;
             } else if (blackScore > whiteScore) {
@@ -161,7 +164,7 @@ public class Board
         }
 
         // if this play leads to a player's opponent not being able to play
-        if (!canPlay(BLACK)) {
+        if (!blackCanPlay) {
             evaluation += 3000;
         } else if (!canPlay(WHITE)) {
             evaluation -= 3000;
@@ -265,7 +268,7 @@ public class Board
 
         int opponentColour = playerColour * -1;
 
-        /* making a custom [8][2] 2D array called dimensions; each of the 8 rows consists of a "pair" (due to the lack
+        /* making a custom [8][2] 2D array called dimensions. Each of the 8 rows consists of a "pair" (due to the lack
          * of a native Java Pair class), the "key" of which represents the difference in rows to the board square provided
          * as a parameter to this function, and the "value" of which similarly represents the difference in columns to the
          * board square we are currently checking.    */
@@ -367,12 +370,21 @@ public class Board
 
     /**
      * Making the assumption that the game ends if one player has no disks left on the board, or if both players have no
-     * valid moves left (which also covers the case of the board being full). <b>Overly complex conditions where a player
-     * is mathematically impossible to win will not be checked.</b>
+     * valid moves left. <b>Overly complex conditions where a player is mathematically impossible to win will not be checked.</b>
      * @return True if the game has ended according to the above conditions, false if it has not.
      */
     public boolean isTerminal() {
         return whiteScore == 0 || blackScore == 0 || (!canPlay(WHITE) && !canPlay(BLACK));
+    }
+
+    /**
+     * Private version of isTerminal, which checks whether a state is terminal without manually calling canPlay for both colours.
+     * @param whiteCanPlay Whether the white player can play
+     * @param blackCanPlay Whether the black player can play
+     * @return True if the game has ended, false if it has not.
+     */
+    private boolean isTerminal(boolean whiteCanPlay, boolean blackCanPlay) {
+        return whiteScore == 0 || blackScore == 0 || (!whiteCanPlay && !blackCanPlay);
     }
 	
 	public Move getLastMove()
